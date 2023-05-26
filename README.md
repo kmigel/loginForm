@@ -9,6 +9,7 @@ This is a console version of a login and registration form. You are able to regi
   - To login into the superuser account use username "admin" and password "admin"
   - Register an ordinary account
   - Login into an account
+  - View any account's password
   - Delete any account except the superuser account if you know their username
 ## Installation
 First you need to download PostgreSQL.
@@ -34,6 +35,8 @@ Now that you have finished setting up PostgreSQL, you can clone the repository a
 ```console
 foo@bar:~$ ./loginForm/loginForm
 ```
+When you first launch the program you will be prompted for your postgres username, password, host address and port. This data will then be stored in userinfo.txt file and will be used for connecting to the loginform database.
+
 ## Built with
 <ul>
   <li><img src="https://img.shields.io/badge/C%2B%2B-00599C?style=for-the-badge&logo=c%2B%2B&logoColor=white" alt="C++"></li>
