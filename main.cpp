@@ -3,12 +3,41 @@
 #include <chrono>
 #include <thread>
 #include <pqxx/pqxx>
+#include <fstream>
 
 using namespace std;
 using namespace pqxx;
 
 int main() {
-    connection c("user = kmigel password = qwerty hostaddr=127.0.0.1 port=5432 dbname = loginform");
+    ifstream userInfo("userinfo.txt");
+    bool isFirstTime = !userInfo;
+    string postuser, postpass, host, port;
+    if(isFirstTime) {
+        cout << "You are only asked this so the program can access the database that you have just created. If you haven't created any databases, close the program and follow instructions in README.md.\n";
+        this_thread::sleep_for(1s);
+        cout << "Write your postgres username: ";
+        cin >> postuser;
+        cout << "Write your postgres password: ";
+        cin >> postpass;
+        cout << "Write your host address: ";
+        cin >> host;
+        cout << "Write your port: ";
+        cin >> port;
+
+        ofstream out("userinfo.txt");
+        out << postuser << '\n';
+        out << postpass << '\n';
+        out << host << '\n';
+        out << port << '\n';
+    }
+    else {
+        getline(userInfo, postuser);
+        getline(userInfo, postpass);
+        getline(userInfo, host);
+        getline(userInfo, port);
+    }
+
+    connection c("user=" + postuser + " password=" + postpass + " hostaddr=" + host + " port=" + port + " dbname = loginform");
     if(!c.is_open()) {
         cout << "Can't open database\n";
         return 1;
@@ -99,7 +128,7 @@ int main() {
                         W.exec("DELETE FROM users WHERE username = '" + W.esc(username) + "';");
                         W.exec("SELECT setval(pg_get_serial_sequence('users', 'id'), coalesce(max(id), 0) + 1, false) FROM users");
                         W.commit();
-                        this_thread::sleep_for(0.5s);
+                        this_thread::sleep_for(1s);
                         cout << "Account successfully deleted\n";
                         isLogged = false;
                     }
