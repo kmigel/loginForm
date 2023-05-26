@@ -7,14 +7,13 @@
 using namespace std;
 using namespace pqxx;
 
-
 int main() {
     connection c("user = kmigel password = qwerty hostaddr=127.0.0.1 port=5432 dbname = loginform");
     if(!c.is_open()) {
         cout << "Can't open database\n";
         return 1;
     }
-    string input, username, password, sql;
+    string input, username, password;
     bool isLogged = false;
     while(true) {
         if(!isLogged) {
@@ -27,9 +26,8 @@ int main() {
                 cout << "Password: ";
                 cin >> password;
 
-                sql = "SELECT password FROM users WHERE username = '" + username + "';";
                 work W(c);
-                result R = W.exec(sql);
+                result R = W.exec("SELECT password FROM users WHERE username = '" + W.esc(username) + "';");
                 
                 if(R.size() == 0) {
                     cout << "Username does not exist, failed to log in\n";
@@ -54,12 +52,11 @@ int main() {
                     cout << "Passwords don't match, failed to register\n";
                 }
                 else {
-                    sql = "SELECT username FROM users WHERE username = '" + username + "';";
                     work W(c);
-                    result R = W.exec(sql);
+                    result R = W.exec("SELECT username FROM users WHERE username = '" + W.esc(username) + "';");
+
                     if(R.size() == 0) {
-                        sql = "INSERT INTO users(username, password) VALUES('" + username + "', '" + password + "');";
-                        W.exec(sql);
+                        W.exec("INSERT INTO users(username, password) VALUES('" + W.esc(username) + "', '" + W.esc(password) + "');");
                         W.commit();
 
                         cout << "Successfully registered, now you can log in\n";
@@ -80,7 +77,7 @@ int main() {
         }
         else {
             cout << "Hello " << username << "! Do you want to\n1. Log out\n2. Exit\n";
-            getline(cin, input);
+            cin >> input;
             if(input == "1") {
                 isLogged = false;
                 cout << "Succesfully logged out!\n";
