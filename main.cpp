@@ -15,13 +15,13 @@ int main() {
     if(isFirstTime) {
         cout << "You are only asked this so the program can access the database that you have just created. If you haven't created any databases, close the program and follow instructions in README.md.\n";
         this_thread::sleep_for(1s);
-        cout << "Write your postgres username: ";
+        cout << "Enter your postgres username: ";
         cin >> postuser;
-        cout << "Write your postgres password: ";
+        cout << "Enter your postgres password: ";
         cin >> postpass;
-        cout << "Write your host address: ";
+        cout << "Enter your host address: ";
         cin >> host;
-        cout << "Write your port: ";
+        cout << "Enter your port: ";
         cin >> port;
 
         ofstream out("userinfo.txt");
@@ -75,7 +75,7 @@ int main() {
                 cout << "Enter your new password: ";
                 cin >> password;
                 string passrepeat;
-                cout << "Enter your password again: ";
+                cout << "Confirm your password: ";
                 cin >> passrepeat;
                 if(password != passrepeat) {
                     cout << "Passwords don't match, failed to register\n";
@@ -105,48 +105,112 @@ int main() {
             }
         }
         else {
-            cout << "Hello " << username << "! Do you want to\n1. Log out\n2. Delete account\n3. Exit\n";
-            cin >> input;
-            if(input == "1") {
-                isLogged = false;
-                cout << "Logging out...\n";
-            }
-            else if(input == "2") {
-                cout << "Are you sure you want to continue? (y/n)";
+            if(username == "admin") {
+                cout << "Hello, admin! Do you want to\n1. Log out\n2. View someone's password\n3. Delete someone's account\n4. Exit\n";
                 cin >> input;
-                if(input == "y") {
-                    cout << "Confirm your password: ";
-                    cin >> password;    
+                if(input == "1") {
+                    isLogged = false;
+                    cout << "Logging out...\n";
+                }
+                else if(input == "2") {
+                    string lookFor;
+                    cout << "Whose password do you want to view? ";
+                    cin >> lookFor;
+                    cout << "Searching...";
                     work W(c);
-                    result R = W.exec("SELECT password FROM users WHERE username = '" + W.esc(username) + "';");
-                    
-                    if(R[0][0].as<string>() != password) {
-                        cout << "Incorrect password, failed to delete account\n";
+                    result R = W.exec("SELECT password FROM users WHERE username = '" + W.esc(lookFor) + "';");
+                    if(R.size() == 0) {
+                        cout << "User with this username does not exist\n";
                     }
                     else {
-                        cout << "Deleting...";
-                        W.exec("DELETE FROM users WHERE username = '" + W.esc(username) + "';");
-                        W.exec("SELECT setval(pg_get_serial_sequence('users', 'id'), coalesce(max(id), 0) + 1, false) FROM users");
-                        W.commit();
                         this_thread::sleep_for(1s);
-                        cout << "Account successfully deleted\n";
-                        isLogged = false;
+                        cout << lookFor << "'s password is " << R[0][0].as<string>() << '\n';
                     }
                 }
-                else if(input == "n") {
-                    cout << "Canceled\n";
+                else if(input == "3") {
+                    cout << "Whose accout do you want to delete? ";
+                    string lookFor;
+                    cin >> lookFor;
+                    work W(c);
+                    result R = W.exec("SELECT password FROM users WHERE username = '" + W.esc(lookFor) + "';");
+                    if(R.size() == 0) {
+                        cout << "User with this username does not exist\n";
+                    }
+                    else if(lookFor == "admin") {
+                        cout << "You can not delete admin account\n";
+                    }
+                    else {
+                        cout << "Are you sure that you want to delete " << lookFor << "'s account? (y/n)";
+                        cin >> input;
+                        if(input == "y") {
+                            cout << "Deleting...";
+                            W.exec("DELETE FROM users WHERE username = '" + W.esc(lookFor) + "';");
+                            W.exec("SELECT setval(pg_get_serial_sequence('users', 'id'), coalesce(max(id), 0) + 1, false) FROM users");
+                            W.commit();
+                            this_thread::sleep_for(1s);
+                            cout << lookFor << "'s account has been successfully deleted\n";
+                        }
+                        else if(input == "n") {
+                            cout << "Canceled\n";
+                        }
+                        else{
+                            cout << "Unknown command, try again\n";
+                        }
+                    }
+                }
+                else if(input == "4") {
+                    cout << "Exiting...\n";
+                    this_thread::sleep_for(1s);
+                    break;
                 }
                 else {
                     cout << "Unknown command, try again\n";
                 }
             }
-            else if(input == "3") {
-                cout << "Exiting...\n";
-                this_thread::sleep_for(1s);
-                break;
-            }
             else {
-                cout << "Unknown command, try again\n";
+                cout << "Hello " << username << "! Do you want to\n1. Log out\n2. Delete account\n3. Exit\n";
+                cin >> input;
+                if(input == "1") {
+                    isLogged = false;
+                    cout << "Logging out...\n";
+                }
+                else if(input == "2") {
+                    cout << "Are you sure you want to continue? (y/n)";
+                    cin >> input;
+                    if(input == "y") {
+                        cout << "Confirm your password: ";
+                        cin >> password;    
+                        work W(c);
+                        result R = W.exec("SELECT password FROM users WHERE username = '" + W.esc(username) + "';");
+                        
+                        if(R[0][0].as<string>() != password) {
+                            cout << "Incorrect password, failed to delete account\n";
+                        }
+                        else {
+                            cout << "Deleting...";
+                            W.exec("DELETE FROM users WHERE username = '" + W.esc(username) + "';");
+                            W.exec("SELECT setval(pg_get_serial_sequence('users', 'id'), coalesce(max(id), 0) + 1, false) FROM users");
+                            W.commit();
+                            this_thread::sleep_for(1s);
+                            cout << "Account successfully deleted\n";
+                            isLogged = false;
+                        }
+                    }
+                    else if(input == "n") {
+                        cout << "Canceled\n";
+                    }
+                    else {
+                        cout << "Unknown command, try again\n";
+                    }
+                }
+                else if(input == "3") {
+                    cout << "Exiting...\n";
+                    this_thread::sleep_for(1s);
+                    break;
+                }
+                else {
+                    cout << "Unknown command, try again\n";
+                }
             }
         }
         this_thread::sleep_for(1s);
