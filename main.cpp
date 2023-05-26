@@ -59,7 +59,7 @@ int main() {
                         W.exec("INSERT INTO users(username, password) VALUES('" + W.esc(username) + "', '" + W.esc(password) + "');");
                         W.commit();
 
-                        cout << "Successfully registered, now you can log in\n";
+                        cout << "Successfully registered, you can now log in\n";
                     }
                     else {
                         cout << "User already exists, failed to register\n";
@@ -76,13 +76,42 @@ int main() {
             }
         }
         else {
-            cout << "Hello " << username << "! Do you want to\n1. Log out\n2. Exit\n";
+            cout << "Hello " << username << "! Do you want to\n1. Log out\n2. Delete account\n3. Exit\n";
             cin >> input;
             if(input == "1") {
                 isLogged = false;
-                cout << "Succesfully logged out!\n";
+                cout << "Logging out...\n";
             }
             else if(input == "2") {
+                cout << "Are you sure you want to continue? (y/n)";
+                cin >> input;
+                if(input == "y") {
+                    cout << "Confirm your password: ";
+                    cin >> password;    
+                    work W(c);
+                    result R = W.exec("SELECT password FROM users WHERE username = '" + W.esc(username) + "';");
+                    
+                    if(R[0][0].as<string>() != password) {
+                        cout << "Incorrect password, failed to delete account\n";
+                    }
+                    else {
+                        cout << "Deleting...";
+                        W.exec("DELETE FROM users WHERE username = '" + W.esc(username) + "';");
+                        W.exec("SELECT setval(pg_get_serial_sequence('users', 'id'), coalesce(max(id), 0) + 1, false) FROM users");
+                        W.commit();
+                        this_thread::sleep_for(0.5s);
+                        cout << "Account successfully deleted\n";
+                        isLogged = false;
+                    }
+                }
+                else if(input == "n") {
+                    cout << "Canceled\n";
+                }
+                else {
+                    cout << "Unknown command, try again\n";
+                }
+            }
+            else if(input == "3") {
                 cout << "Exiting...\n";
                 this_thread::sleep_for(1s);
                 break;
