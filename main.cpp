@@ -140,7 +140,7 @@ int main() {
                         cout << "You can not delete admin account\n";
                     }
                     else {
-                        cout << "Are you sure that you want to delete " << lookFor << "'s account? (y/n)";
+                        cout << "Are you sure that you want to delete " << lookFor << "'s account? (y/n) ";
                         cin >> input;
                         if(input == "y") {
                             cout << "Deleting...";
@@ -175,7 +175,7 @@ int main() {
                     cout << "Logging out...\n";
                 }
                 else if(input == "2") {
-                    cout << "Are you sure you want to continue? (y/n)";
+                    cout << "Are you sure you want to continue? (y/n) ";
                     cin >> input;
                     if(input == "y") {
                         cout << "Confirm your password: ";
@@ -215,8 +215,7 @@ int main() {
         }
         this_thread::sleep_for(1s);
         cout << '\n';
+        c.close();
     }
-
-    c.disconnect();
     return 0;
 }
